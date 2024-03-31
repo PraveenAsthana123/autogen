@@ -1,0 +1,75 @@
+name: Deployment
+
+env:
+  GCP_PROJECT_ID: "fast-ai-exploration"
+  GKE_CLUSTER: "fastapi-cluster"
+  GKE_REGION: "us-central1"
+  GKE_ZONE: "us-central1-a"
+  IMAGE: "gcr.io/fast-ai-exploration/fastapi-k8s"
+  GKE_DEPLOYMENT: "fastapi-server"
+
+on:
+  push:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git
+        uses: actions/checkout@v2
+
+      - name: GCP auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+
+      - name: Docker auth
+        run: |-
+          gcloud --quiet auth configure-docker
+      
+      - name: GKE auth
+        run: |- 
+          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE" --project "$GCP_PROJECT_ID"
+
+      - name: Check if the requested directories have any changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+            filters: |
+                src:
+                  - 'api/**'
+                  - '.github/**'
+                  - '.kube/**'
+                  - Dockerfile
+
+      - name: Build and push Docker image based on the changes
+        if: steps.changes.outputs.src == 'true'
+        run: |
+          docker build --tag "$IMAGE:$GITHUB_SHA" .
+          docker tag "$IMAGE:$GITHUB_SHA" "$IMAGE:latest"
+          docker push "$IMAGE:$GITHUB_SHA"
+          docker push "$IMAGE:latest"
+
+      - name: Set up Kustomize
+        working-directory: .kube/
+        if: steps.changes.outputs.src == 'true'
+        run: |-
+          curl -sfLo kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_v4.1.2_linux_amd64.tar.gz
+          tar -zxvf kustomize.tar.gz
+          chmod u+x ./kustomize
+      
+      - name: Deploy to GKE
+        working-directory: .kube/
+        if: steps.changes.outputs.src == 'true'
+        run: |-
+          ./kustomize edit set image $IMAGE:$GITHUB_SHA
+          ./kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/$GKE_DEPLOYMENT
+          kubectl get services -o wide

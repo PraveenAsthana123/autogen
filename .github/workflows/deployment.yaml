@@ -69,8 +69,8 @@ jobs:
         working-directory: .
         if: steps.changes.outputs.src == 'true'
         run: |-
-          kubectl apply -f deployment.yaml
-          kubectl apply -f hpa.yaml
-          kubectl apply -f service.yaml
+          kubectl apply -f .kube/deployment.yaml
+          kubectl apply -f .kube/hpa.yaml
+          kubectl apply -f .kube/service.yaml
           kubectl rollout status deployment/$GKE_DEPLOYMENT
           kubectl get services -o wide

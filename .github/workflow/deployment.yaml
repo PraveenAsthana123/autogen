@@ -1,11 +1,11 @@
 name: Deployment
 
 env:
-  GCP_PROJECT_ID: "fast-ai-exploration"
-  GKE_CLUSTER: "fastapi-cluster"
-  GKE_REGION: "us-central1"
-  GKE_ZONE: "us-central1-a"
-  IMAGE: "gcr.io/fast-ai-exploration/fastapi-k8s"
+  GCP_PROJECT_ID: "shining-relic-418919"
+  GKE_CLUSTER: "autogen"
+  GKE_REGION: "us-central1-c"
+  GKE_ZONE: "us-central1-c"
+  IMAGE: "gcr.io/autogen/fastapi-server"
   GKE_DEPLOYMENT: "fastapi-server"
 
 on:

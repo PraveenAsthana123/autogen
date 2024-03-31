@@ -5,7 +5,7 @@ env:
   GKE_CLUSTER: "autogen"
   GKE_REGION: "us-central1-c"
   GKE_ZONE: "us-central1-c"
-  IMAGE: "gcr.io/autogen/fastapi_server"
+  IMAGE: "gcr.io/shining-relic-418919/autogen/fastapi_server"
   GKE_DEPLOYMENT: "fastapi-server"
 
 on:
@@ -52,6 +52,7 @@ jobs:
       - name: Build and push Docker image based on the changes
         if: steps.changes.outputs.src == 'true'
         run: |
+          docker login -u _json_key -p "$(cat  ${{ secrets.GCP_CREDENTIALS }})" https://gcr.io
           docker build --tag "$IMAGE:$GITHUB_SHA" .
           docker tag "$IMAGE:$GITHUB_SHA" "$IMAGE:latest"
           docker push "$IMAGE:$GITHUB_SHA"

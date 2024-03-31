@@ -69,7 +69,7 @@ jobs:
         working-directory: .kube/
         if: steps.changes.outputs.src == 'true'
         run: |-
-          ./kustomize edit set image $IMAGE:$GITHUB_SHA
-          ./kustomize build . | kubectl apply -f -
+          ./kustomize edit set image $IMAGE:$GITHUB_SHA --validate=false
+          ./kustomize build . --validate=false | kubectl apply -f - 
           kubectl rollout status deployment/$GKE_DEPLOYMENT
           kubectl get services -o wide

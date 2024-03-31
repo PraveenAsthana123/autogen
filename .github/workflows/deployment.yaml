@@ -5,7 +5,7 @@ env:
   GKE_CLUSTER: "autogen"
   GKE_REGION: "us-central1-c"
   GKE_ZONE: "us-central1-c"
-  IMAGE: "gcr.io/autogen/fastapi-server"
+  IMAGE: "gcr.io/autogen/fastapi_server"
   GKE_DEPLOYMENT: "fastapi-server"
 
 on:

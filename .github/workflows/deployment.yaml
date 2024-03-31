@@ -32,7 +32,7 @@ jobs:
 
       - name: Docker auth
         run: |-
-          gcloud --quiet auth configure-docker
+          gcloud --quiet auth configure-docker --project "$GCP_PROJECT_ID"
       
       - name: GKE auth
         run: |- 
